@@ -1,0 +1,22 @@
+assessment:
+  type: cumulative effects
+  scale: network
+  vc: species
+  stressors:
+    name:
+      id: "e2b7e6c4" # Depends on the pipedat package
+      accronym: dd # Accronym to use as name of R object or data element
+      name: Demersal destructive # Complete name to use in figures and reports 
+      description: Intensity of demersal destructive fisheries # Description to use in reports
+    name2:
+      id: "e2b7e6c4" # Depends on the pipedat package
+      accronym: dd # Accronym to use as name of R object or data element
+      name: Demersal destructive # Complete name to use in figures and reports 
+      description: Intensity of demersal destructive fisheries # Description to use in reports
+  valued_components:
+    name: 
+      id: "e2b7e6c4" # Depends on the pipedat package
+      accronym: species # Accronym to use as name of R object or data element
+      name: Species of interest # Complete name to use in figures and reports 
+      description: Distribution of species of interest # Description to use in reports
+
