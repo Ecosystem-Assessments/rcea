@@ -1,21 +1,23 @@
 Package: rcea
 Type: Package
-Title: The Title of the Project
-Version: 0.0.0.9000
+Title: Cumulative effects assessments package
+Version: 1.0.0
 Authors@R: c(
     person(given   = "David",
            family  = "Beauchesne",
            role    = c("aut", "cre", "cph"),
            email   = "david.beauchesne@hotmail.com",
            comment = c(ORCID = "0000-0002-3590-8161")))
-Description: A paragraph providing a full description of the project (on 
-    several lines...)
+Description: Package providing functionalities to perform spatially explicit cumulative effects assessments
 URL: https://github.com/david-beauchesne/rcea
 BugReports: https://github.com/david-beauchesne/rcea/issues
 License: GPL (>= 2)
 Encoding: UTF-8
+LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
+Imports:
+    motifcensus
 Suggests: 
     knitr,
     rmarkdown,

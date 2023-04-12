@@ -4,9 +4,9 @@
 \name{rcea-package}
 \alias{rcea}
 \alias{rcea-package}
-\title{rcea: The Title of the Project}
+\title{rcea: Cumulative effects assessments package}
 \description{
-A paragraph providing a full description of the project (on several lines...)
+Package providing functionalities to perform spatially explicit cumulative effects assessments
 }
 \seealso{
 Useful links:
