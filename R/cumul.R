@@ -7,7 +7,12 @@
 #' @export
 cumul <- function(dat) {
   library(stars)
-  do.call("c", dat) |>
-  stars::st_redimension() |>
-  stars::st_apply(c(1,2), sum, na.rm = TRUE)      
+  
+  # Combine if in list
+  if (class(dat) == "list") dat <- do.call("c", dat)
+
+  # Redimension and sum 
+  stars::st_redimension(dat) |>
+  stars::st_apply(c(1,2), sum, na.rm = TRUE) |>
+  setNames("Footprint")     
 }

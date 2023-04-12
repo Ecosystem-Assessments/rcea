@@ -11,7 +11,7 @@ direct_cea(drivers, vc, sensitivity)
 
 \item{vc}{list of stars or terra objects}
 
-\item{sensitivity}{matrix of \link{drivers x vc}}
+\item{sensitivity}{matrix of drivers x vc}
 }
 \description{
 Function to assess cumulative effects considering only direct effects, i.e. the Halpern et al. (2008) methodology
