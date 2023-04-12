@@ -6,7 +6,8 @@
 #'
 #' @export
 cumul <- function(dat) {
-  dplyr::group_by(dat, uid) |>
-  dplyr::summarise(cumulative_footprint = sum(value, na.rm = TRUE)) |>
-  data.frame()
+  library(stars)
+  do.call("c", dat) |>
+  stars::st_redimension() |>
+  stars::st_apply(c(1,2), sum, na.rm = TRUE)      
 }
