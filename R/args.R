@@ -3,12 +3,12 @@
 # NOTE: Documented here in order to avoid unnecessary repetition in documentation and allow for easy modifications in the future if necessary.
 arguments <- function(arg) {
   dat <- list()
-  dat$drivers <- "@param drivers list of stars or terra objects"
-  dat$vc <- "@param vc list of stars or terra objects"
-  dat$sensitivity <- "@param sensitivity matrix of drivers x vc"
-  dat$metaweb <- "@param metaweb matrix of vc x vc"
-  dat$trophic_sensitivity <- "@param trophic_sensitivity data.frame of trophic sensitivities, default from Beauchesne"
-  dat$weight <- "@param weight weight for the direct vs indirect modules when calculating cea scores, should be between 0 and 1"
+  dat$drivers <- "@param drivers distribution and intensity of environmental drivers as stars object"
+  dat$vc <- "@param vc distribution of valued components as stars object"
+  dat$sensitivity <- "@param sensitivity matrix of environmental drivers and valued component, with same name as those used in `drivers` and `vc`"
+  dat$metaweb <- "@param metaweb matrix of valued component by valued component describing the binary interations structuring the network of valued components"
+  dat$trophic_sensitivity <- "@param trophic_sensitivity data.frame of trophic sensitivities, default from Beauchesne. Available as data package with `data(trophic_sensitivity)`"
+  dat$w_d <- dat$w_i <- "@param weights weight for the direct (`w_d`) and indirect (`w_i`) modules when calculating network-scale cea scores; w_d + 2*w_i should be equal to 1."
   
   dat[names(dat) %in% arg] |>
   unlist()

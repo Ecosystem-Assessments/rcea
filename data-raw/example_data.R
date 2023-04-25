@@ -2,7 +2,7 @@
 # Code to generate the data used for the function examples 
 library(stars)
 random <- function(cont = TRUE) {
-  m <- secr::make.mask(nx = 10, ny = 10, spacing = 2)
+  m <- secr::make.mask(nx = 5, ny = 5, spacing = 5)
   h <- secr::randomHabitat(m, p = 0.5, A = 0.3)
   r <- secr::raster(h)
 
@@ -28,19 +28,24 @@ vc <- purrr::map(1:nVC, \(i) random(FALSE)) |>
 vc <- do.call("c", vc) 
 # plot(merge(vc))
 
-# Sensitivity 
+# Sensitivity + sprinkle in some 0 in there
 sensitivity <- matrix(
-  ncol = nVC,
-  nrow = nDr,
-  data = runif(n = nVC*nDr),
-  dimnames = list(names(drivers), names(vc))
+  ncol = nDr,
+  nrow = nVC,
+  data = runif(n = nDr*nVC),
+  dimnames = list(names(vc), names(drivers))
 )
+uid <- sample(
+  x = 1:length(sensitivity), 
+  size = round(0.2 * length(sensitivity), 0)
+)
+sensitivity[uid] <- 0
 
 # Metaweb 
 metaweb <- matrix(
   ncol = nVC,
   nrow = nVC,
-  data = sample(c(0,1), size = nVC * nVC, replace = TRUE),
+  data = sample(c(0,0,0,0,1), size = nVC * nVC, replace = TRUE),
   dimnames = list(names(vc), names(vc))
 )
 diag(metaweb) <- 0
