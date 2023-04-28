@@ -45,10 +45,11 @@ sensitivity[uid] <- 0
 metaweb <- matrix(
   ncol = nVC,
   nrow = nVC,
-  data = sample(c(0,0,0,0,1), size = nVC * nVC, replace = TRUE),
+  data = sample(c(rep(0,15),1), size = nVC * nVC, replace = TRUE),
   dimnames = list(names(vc), names(vc))
 )
 diag(metaweb) <- 0
+# sum(metaweb) / nVC^2 # aiming for ~0.06
 
 # Export
 usethis::use_data(drivers, vc, sensitivity, metaweb, overwrite = TRUE, internal = TRUE)
