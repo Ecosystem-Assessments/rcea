@@ -54,6 +54,8 @@ vc <- rcea:::vc
 sensitivity <- rcea:::sensitivity
 metaweb <- rcea:::metaweb
 trophic_sensitivity <- rcea::trophic_sensitivity
+trophic_sensitivity$Sensitivity <- trophic_sensitivity$Sensitivity2
+#> Warning: Unknown or uninitialised column: `Sensitivity2`.
 pal <- viridis::viridis
 
 # Plots 

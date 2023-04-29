@@ -12,7 +12,8 @@
 #' vc <- rcea:::vc
 #' sensitivity <- rcea:::sensitivity
 #' metaweb <- rcea:::metaweb
-#' data(trophic_sensitivity)
+#' trophic_sensitivity <- rcea::trophic_sensitivity
+#' trophic_sensitivity$Sensitivity <- trophic_sensitivity$Sensitivity2
 #'
 #' \dontrun{
 #' # Network-scale effects 
