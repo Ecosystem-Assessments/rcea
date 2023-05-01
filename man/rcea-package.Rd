@@ -12,6 +12,7 @@ Package providing functionalities to perform spatially explicit cumulative effec
 Useful links:
 \itemize{
   \item \url{https://github.com/david-beauchesne/rcea}
+  \item \url{https://ecosystem-assessments.github.io/rcea/}
   \item Report bugs at \url{https://github.com/david-beauchesne/rcea/issues}
 }
 
