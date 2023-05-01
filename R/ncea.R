@@ -60,8 +60,10 @@ ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0
   # Direct & indirect effects
   direct_indirect <- get_direct_indirect(motif_effects)
   direct <- dplyr::filter(direct_indirect, direct) |>
+            dplyr::select(-direct) |>
             make_stars(drivers, vc)
   indirect <- dplyr::filter(direct_indirect, !direct) |>
+              dplyr::select(-direct) |>
               make_stars(drivers, vc)
 
   # Net effects
@@ -340,7 +342,8 @@ get_species_contribution <- function(motif_effects) {
       dplyr::all_of(drNames),
       \(x) sum(x, na.rm = TRUE)
     )
-  )
+  ) |>
+  dplyr::ungroup()
 }
 
 #' ========================================================================================
@@ -358,7 +361,8 @@ get_direct_indirect <- function (motif_effects) {
       dplyr::all_of(drNames), 
       \(x) sum(x, na.rm = TRUE)
     )
-  )
+  ) |>
+  dplyr::ungroup()
 }
 
 #' ========================================================================================
@@ -376,7 +380,8 @@ get_net <- function (motif_effects) {
       dplyr::all_of(drNames), 
       \(x) sum(x, na.rm = TRUE)
     )
-  )
+  ) |>
+  dplyr::ungroup()
 }  
 
 #' ========================================================================================
@@ -407,7 +412,8 @@ get_cekm <- function (motif_effects, vc) {
            dplyr::group_by(vc) |>
            dplyr::summarise(km2 = sum(presence, na.rm = TRUE)) |>
            dplyr::left_join(vc_index, by = "vc") |>
-           dplyr::select(-vc)
+           dplyr::select(-vc) |>
+           dplyr::ungroup()
         
   # Direct & indirect effects      
   direct_indirect <- get_direct_indirect(motif_effects) |>
@@ -431,7 +437,8 @@ get_cekm <- function (motif_effects, vc) {
                          !direct ~ "indirect"
                        ) 
                      ) |>
-                     dplyr::select(-direct)
+                     dplyr::select(-direct) |>
+                     dplyr::ungroup()
    
    # Net effects 
    net <- direct_indirect |>
@@ -443,7 +450,8 @@ get_cekm <- function (motif_effects, vc) {
               \(x) sum(x, na.rm = TRUE)
             )
           ) |>
-          dplyr::mutate(type = "net")
+          dplyr::mutate(type = "net") |>
+          dplyr::ungroup()
   
   
   # Summary table

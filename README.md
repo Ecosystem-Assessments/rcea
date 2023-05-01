@@ -54,8 +54,6 @@ vc <- rcea:::vc
 sensitivity <- rcea:::sensitivity
 metaweb <- rcea:::metaweb
 trophic_sensitivity <- rcea::trophic_sensitivity
-trophic_sensitivity$Sensitivity <- trophic_sensitivity$Sensitivity2
-#> Warning: Unknown or uninitialised column: `Sensitivity2`.
 pal <- viridis::viridis
 
 # Plots 
@@ -130,8 +128,6 @@ plot(dat, breaks = "equal", col = pal)
 ``` r
 # Network-scale cumulative effects assessment (Beauchesne et al. 2021)
 beauchesne <- ncea(drivers, vc, sensitivity, metaweb, trophic_sensitivity)
-#> Adding missing grouping variables: `vc_id`
-#> Adding missing grouping variables: `vc_id`
 
 # Net cumulative effects
 dat <- cea_extract(beauchesne$net, cumul_fun = "full") 
