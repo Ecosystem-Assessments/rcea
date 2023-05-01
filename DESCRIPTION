@@ -9,9 +9,8 @@ Authors@R: c(
            email   = "david.beauchesne@hotmail.com",
            comment = c(ORCID = "0000-0002-3590-8161")))
 Description: Package providing functionalities to perform spatially explicit cumulative effects assessments
-URL: https://github.com/david-beauchesne/rcea,
-    https://ecosystem-assessments.github.io/rcea/
-BugReports: https://github.com/david-beauchesne/rcea/issues
+URL: https://ecosystem-assessments.github.io/rcea/
+BugReports: https://ecosystem-assessments.github.io/rcea/issues
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
