@@ -23,7 +23,8 @@ ncea(
   trophic_sensitivity,
   w_d = 0.5,
   w_i = 0.25,
-  motif_summary = NULL
+  motif_summary = NULL,
+  exportAs = "stars"
 )
 
 cea_binary(effect)
@@ -61,7 +62,7 @@ get_cekm(motif_effects, vc)
 
 \item{motif_summary}{list of parameters obtained from \link{ncea_motifs} to allow for faster assessments, since that part of the assessment is the longest to run.}
 
-\item{exportAs}{string, the type of object that should be created, either a "data.frame" or a "stars" object}
+\item{exportAs}{string, the type of object that should be created, either multiple "data.frame" or "stars" objects}
 }
 \description{
 Assessment of cumulative effects and related metrics using the Beauchesne et al. 2021 method.

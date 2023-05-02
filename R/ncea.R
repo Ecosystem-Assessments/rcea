@@ -4,7 +4,7 @@
 #'
 #' @eval arguments(c("drivers","vc","sensitivity","metaweb","trophic_sensitivity"))
 #' @param motif_summary list of parameters obtained from \link{ncea_motifs} to allow for faster assessments, since that part of the assessment is the longest to run. 
-#' @param exportAs string, the type of object that should be created, either a "data.frame" or a "stars" object
+#' @param exportAs string, the type of object that should be created, either multiple "data.frame" or "stars" objects
 #'
 #' @examples
 #' # Data
@@ -23,7 +23,7 @@
 #' plot(beauchesne$indirect)
 #' }
 #' @export
-ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0.5, w_i = 0.25, motif_summary = NULL) {
+ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0.5, w_i = 0.25, motif_summary = NULL, exportAs = "stars") {
   # NOTE: `motif_summary` Allows a user to directly provide the motif_summary object if it's 
   #       been run before. This saves computation time if you wish to play around with weights 
   #       or other method parameters.
@@ -54,24 +54,27 @@ ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0
   
   # Species contribution to indirect effects 
   species_contribution <- get_species_contribution(motif_effects) |>
-                          dplyr::rename(vc_id = interaction) |>
-                          make_stars(drivers, vc)
+                          dplyr::rename(vc_id = interaction)
   
   # Direct & indirect effects
   direct_indirect <- get_direct_indirect(motif_effects)
   direct <- dplyr::filter(direct_indirect, direct) |>
-            dplyr::select(-direct) |>
-            make_stars(drivers, vc)
+            dplyr::select(-direct)
   indirect <- dplyr::filter(direct_indirect, !direct) |>
-              dplyr::select(-direct) |>
-              make_stars(drivers, vc)
+              dplyr::select(-direct)
 
   # Net effects
-  net <- get_net(motif_effects) |>
-         make_stars(drivers, vc)
+  net <- get_net(motif_effects)
   
   # Effects / km2 
   cekm <- get_cekm(motif_effects, vc)
+  
+  if (exportAs == "stars") {
+    species_contribution <- make_stars(species_contribution, drivers, vc)
+    direct <- make_stars(direct, drivers, vc)
+    indirect <- make_stars(indirect, drivers, vc)
+    net <- make_stars(net, drivers, vc)
+  }
   
   # Return
   list(
