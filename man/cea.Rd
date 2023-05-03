@@ -2,9 +2,12 @@
 % Please edit documentation in R/cea.R
 \name{cea}
 \alias{cea}
+\alias{get_cekm_cea}
 \title{Cumulative effects assessments}
 \usage{
 cea(drivers, vc, sensitivity, exportAs = "list")
+
+get_cekm_cea(dat, vc)
 }
 \arguments{
 \item{drivers}{distribution and intensity of environmental drivers as stars object}
@@ -18,6 +21,11 @@ cea(drivers, vc, sensitivity, exportAs = "list")
 \description{
 Assessment of cumulative effects using the Halpern et al. 2008 method.
 }
+\section{Functions}{
+\itemize{
+\item \code{get_cekm_cea()}: get effects per km2
+
+}}
 \examples{
 # Data
 drivers <- rcea:::drivers 
@@ -30,4 +38,5 @@ plot(halpern)
 halpern <- merge(halpern, name = "vc") |>
           split("drivers")
 plot(halpern)
+get_cekm_cea(halpern, vc)
 }

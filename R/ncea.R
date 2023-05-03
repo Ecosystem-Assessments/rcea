@@ -67,7 +67,7 @@ ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0
   net <- get_net(motif_effects)
   
   # Effects / km2 
-  cekm <- get_cekm(motif_effects, vc)
+  cekm <- get_cekm_ncea(motif_effects, vc)
   
   if (exportAs == "stars") {
     species_contribution <- make_stars(species_contribution, drivers, vc)
@@ -392,7 +392,7 @@ get_net <- function (motif_effects) {
 #' ----------------------------------------------------------------------------------------
 #' @describeIn ncea get effects per km2
 #' @export
-get_cekm <- function (motif_effects, vc) {
+get_cekm_ncea <- function (motif_effects, vc) {
   # Driver names
   notDr <- c("id_cell","vc_id","interaction","Sensitivity","direct","M","weight")
   drNames <- colnames(motif_effects)

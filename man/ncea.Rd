@@ -12,7 +12,7 @@
 \alias{get_species_contribution}
 \alias{get_direct_indirect}
 \alias{get_net}
-\alias{get_cekm}
+\alias{get_cekm_ncea}
 \title{Network-scale cumulative effects assessments}
 \usage{
 ncea(
@@ -47,7 +47,7 @@ get_direct_indirect(motif_effects)
 
 get_net(motif_effects)
 
-get_cekm(motif_effects, vc)
+get_cekm_ncea(motif_effects, vc)
 }
 \arguments{
 \item{drivers}{distribution and intensity of environmental drivers as stars object}
@@ -89,7 +89,7 @@ Assessment of cumulative effects and related metrics using the Beauchesne et al.
 
 \item \code{get_net()}: get net effects of drivers
 
-\item \code{get_cekm()}: get effects per km2
+\item \code{get_cekm_ncea()}: get effects per km2
 
 }}
 \examples{
