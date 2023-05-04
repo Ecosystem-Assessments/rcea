@@ -78,7 +78,8 @@ ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0
   
   # Return
   list(
-    motif_effects = motif_effects,
+    # motif_effects = motif_effects,
+    xy = xy,
     net = net,
     direct = direct, 
     indirect = indirect,
