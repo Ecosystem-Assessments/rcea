@@ -23,7 +23,6 @@ ncea(
   trophic_sensitivity,
   w_d = 0.5,
   w_i = 0.25,
-  motif_summary = NULL,
   exportAs = "stars"
 )
 
@@ -59,8 +58,6 @@ get_cekm_ncea(motif_effects, vc)
 \item{metaweb}{matrix of valued component by valued component describing the binary interations structuring the network of valued components}
 
 \item{trophic_sensitivity}{data.frame of trophic sensitivities, default from Beauchesne. Available as data package with \code{data(trophic_sensitivity)}}
-
-\item{motif_summary}{list of parameters obtained from \link{ncea_motifs} to allow for faster assessments, since that part of the assessment is the longest to run.}
 
 \item{exportAs}{string, the type of object that should be created, either multiple "data.frame" or "stars" objects}
 }

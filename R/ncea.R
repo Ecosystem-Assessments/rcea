@@ -3,7 +3,6 @@
 #' Assessment of cumulative effects and related metrics using the Beauchesne et al. 2021 method. 
 #'
 #' @eval arguments(c("drivers","vc","sensitivity","metaweb","trophic_sensitivity"))
-#' @param motif_summary list of parameters obtained from \link{ncea_motifs} to allow for faster assessments, since that part of the assessment is the longest to run. 
 #' @param exportAs string, the type of object that should be created, either multiple "data.frame" or "stars" objects
 #'
 #' @examples
@@ -23,69 +22,72 @@
 #' plot(beauchesne$indirect)
 #' }
 #' @export
-ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0.5, w_i = 0.25, motif_summary = NULL, exportAs = "stars") {
+ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0.5, w_i = 0.25, exportAs = "stars") {
   # NOTE: `motif_summary` Allows a user to directly provide the motif_summary object if it's 
   #       been run before. This saves computation time if you wish to play around with weights 
   #       or other method parameters.
-  if (is.null(motif_summary)) {
-    # 3-species motifs for full metaweb
-    motifs <- triads(metaweb)
+  # 3-species motifs for full metaweb
+  motifs <- triads(metaweb)
 
-    # Direct effects, i.e. Halpern approach
-    direct_effect <- cea(drivers, vc, sensitivity) |>
-                     make_array()
+  # Direct effects, i.e. Halpern approach
+  direct_effect <- cea(drivers, vc, sensitivity) |>
+                   make_array()
 
-    # Pathways of direct effect
-    direct_pathways <- cea_pathways(direct_effect, vc)
+  # Pathways of direct effect
+  direct_pathways <- cea_pathways(direct_effect, vc)
 
+  if (nrow(direct_pathways) > 0) {
     # Pathways of indirect effect
     indirect_pathways <- ncea_pathways_(direct_pathways, motifs)
 
     # Effects for motifs in each cell 
     motif_summary <- ncea_motifs(direct_effect, indirect_pathways)
-  }
-  
-  # Measure effects on each motif
-  motif_effects <- ncea_effects(motif_summary, w_d, w_i)
-  
-  # params for stars object creation
-  xy <- sf::st_coordinates(drivers)
-  drNames <- names(drivers)
-  
-  # Species contribution to indirect effects 
-  species_contribution <- get_species_contribution(motif_effects) |>
-                          dplyr::rename(vc_id = interaction)
-  
-  # Direct & indirect effects
-  direct_indirect <- get_direct_indirect(motif_effects)
-  direct <- dplyr::filter(direct_indirect, direct) |>
-            dplyr::select(-direct)
-  indirect <- dplyr::filter(direct_indirect, !direct) |>
+    
+    # Measure effects on each motif
+    motif_effects <- ncea_effects(motif_summary, w_d, w_i)
+    
+    # params for stars object creation
+    xy <- sf::st_coordinates(drivers)
+    drNames <- names(drivers)
+    
+    # Species contribution to indirect effects 
+    species_contribution <- get_species_contribution(motif_effects) |>
+                            dplyr::rename(vc_id = interaction)
+    
+    # Direct & indirect effects
+    direct_indirect <- get_direct_indirect(motif_effects)
+    direct <- dplyr::filter(direct_indirect, direct) |>
               dplyr::select(-direct)
+    indirect <- dplyr::filter(direct_indirect, !direct) |>
+                dplyr::select(-direct)
 
-  # Net effects
-  net <- get_net(motif_effects)
-  
-  # Effects / km2 
-  cekm <- get_cekm_ncea(motif_effects, vc)
-  
-  if (exportAs == "stars") {
-    species_contribution <- make_stars(species_contribution, drivers, vc)
-    direct <- make_stars(direct, drivers, vc)
-    indirect <- make_stars(indirect, drivers, vc)
-    net <- make_stars(net, drivers, vc)
+    # Net effects
+    net <- get_net(motif_effects)
+    
+    # Effects / km2 
+    cekm <- get_cekm_ncea(motif_effects, vc)
+    
+    if (exportAs == "stars") {
+      species_contribution <- make_stars(species_contribution, drivers, vc)
+      direct <- make_stars(direct, drivers, vc)
+      indirect <- make_stars(indirect, drivers, vc)
+      net <- make_stars(net, drivers, vc)
+    }
+    
+    # Return
+    list(
+      # motif_effects = motif_effects,
+      xy = xy,
+      net = net,
+      direct = direct, 
+      indirect = indirect,
+      species_contribution = species_contribution,
+      cekm = cekm
+    )    
+  } else {
+    NULL
   }
-  
-  # Return
-  list(
-    # motif_effects = motif_effects,
-    xy = xy,
-    net = net,
-    direct = direct, 
-    indirect = indirect,
-    species_contribution = species_contribution,
-    cekm = cekm
-  )
+
 }
 
 
