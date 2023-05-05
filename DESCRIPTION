@@ -17,12 +17,27 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports:
+    cli,
+    crayon,
+    dplyr,
+    fs,
+    glue,
+    grDevices,
+    graphics,
     motifcensus,
-    stars
+    rlang,
+    sf,
+    stars,
+    stats,
+    tidyr,
+    whisker,
+    yaml
 Suggests: 
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
+Remotes:
+    Ecosystem-Assessments/motifcensus
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 

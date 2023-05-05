@@ -15,7 +15,7 @@ NULL
 
 
 # ------------------------------------------------------------------------------
-# Gracieuseté de Kevin Cazelles: https://github.com/KevCaz
+# Gracieuset\u00e9 de Kevin Cazelles: https://github.com/KevCaz
 # my simple(r) version of use template
 use_template <- function(template, save_as = stdout(), pkg = "rcea", ...) {
   template <- readLines(
