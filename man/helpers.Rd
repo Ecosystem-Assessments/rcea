@@ -3,11 +3,14 @@
 \name{make_array}
 \alias{make_array}
 \alias{make_stars}
+\alias{make_stars2}
 \title{\code{rcea} helper functions}
 \usage{
 make_array(dat)
 
 make_stars(dat, drivers, vc)
+
+make_stars2(dat, drivers, vc)
 }
 \arguments{
 \item{dat}{list of cea matrices or cea array}
@@ -24,5 +27,7 @@ List of functions that support the main functions of the \code{rcea} package
 \item \code{make_array()}: create array from list of cea matrices
 
 \item \code{make_stars()}: create stars object from list of cea matrices or cea array
+
+\item \code{make_stars2()}: create stars object from list of cea matrices or cea array
 
 }}
