@@ -83,7 +83,6 @@ make_stars <- function(dat, drivers, vc) {
 #' @describeIn helpers create stars object from list of cea matrices or cea array
 #' @export
 make_stars2 <- function(dat, drivers, vc) {
-  dat <- beauchesne$net
   xy <- sf::st_coordinates(drivers)
   drNames <- names(drivers)
   vc_index <- data.frame(
