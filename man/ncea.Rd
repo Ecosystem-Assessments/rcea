@@ -28,7 +28,7 @@ ncea(
 
 cea_binary(effect)
 
-triads(metaweb)
+triads(metaweb, trophic_sensitivity)
 
 cea_pathways(effect, vc)
 
@@ -68,11 +68,11 @@ Assessment of cumulative effects and related metrics using the Beauchesne et al.
 \itemize{
 \item \code{cea_binary()}: transform effects assessment into binary 2D matrix to assess the presence of an effect to a valued component in a specific grid cell
 
-\item \code{triads()}: assess all triads of interest from metaweb
+\item \code{triads()}: assess all triads of interest from metaweb and attach trophic sensitivities
 
 \item \code{cea_pathways()}: pathways of direct effect
 
-\item \code{ncea_pathways()}: pathways of indirect effect and trophic sensitivity
+\item \code{ncea_pathways()}: assess all triads of interest from metaweb
 
 \item \code{ncea_pathways_()}: apply ncea_pathways to get pathways of indirect effect and trophic sensitivity for all cells
 

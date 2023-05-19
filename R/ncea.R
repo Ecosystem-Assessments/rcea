@@ -27,7 +27,7 @@ ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0
   #       been run before. This saves computation time if you wish to play around with weights 
   #       or other method parameters.
   # 3-species motifs for full metaweb
-  motifs <- triads(metaweb)
+  motifs <- triads(metaweb, trophic_sensitivity)
 
   # Direct effects, i.e. Halpern approach
   direct_effect <- cea(drivers, vc, sensitivity) |>
@@ -109,51 +109,64 @@ cea_binary <- function(effect) {
 #' ========================================================================================
 #' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' ----------------------------------------------------------------------------------------
-#' @describeIn ncea assess all triads of interest from metaweb
+#' @describeIn ncea assess all triads of interest from metaweb and attach trophic sensitivities
 #' @export
-triads <- function(metaweb) {
-  dat <- as.matrix(metaweb) |>
-         motifcensus::motif_census_triplet() |>
-         dplyr::mutate(motif_id = 1:dplyr::n())
-
-  # Select only motifs of interest
-  motifs <- c('exploitative competition','linear chain','apparent competition','omnivory')
-  uid <- dat$name_uni %in% motifs
-  dat <- dat[uid, ]
-
-  # Modify index for positions i,j,k (currently starts at 0)
-  dat$i_id <- dat$i + 1
-  dat$j_id <- dat$j + 1
-  dat$k_id <- dat$k + 1
-
-  # Modify position numbers
-  # Species:
-  #   1: exploitative competition bottom
-  #   2: exploitative competition top
-  #   3: linear chains bottom
-  #   4: linear chains middle
-  #   5: linear chains top
-  #   9: apparent competition bottom
-  #  10: apparent competition top
-  #  11: omnivory bottom
-  #  12: omnivory middle
-  #  13: omnivory top
-  mid <- data.frame(motifcensus = c(1,2,3,4,5,9,10,11,12,13),
-                    id = c(1,3,1,2,3,1,3,1,2,3))
-
-  # Import in the table
-  dat <- dat |>
-         dplyr::left_join(mid, by = c("pos_i" = "motifcensus")) |>
-         dplyr::rename(i_num = id) |>
-         dplyr::left_join(mid, by = c("pos_j" = "motifcensus")) |>
-         dplyr::rename(j_num = id) |>
-         dplyr::left_join(mid, by = c("pos_k" = "motifcensus")) |>
-         dplyr::rename(k_num = id)
-
-  # Transform duplicated positions
-  dat$j_num[dat$j_num == dat$i_num] <- 2
-  dat$j_num[dat$j_num == dat$k_num] <- 2
-  dat$k_num[dat$k_num == dat$i_num] <- 2  
+triads <- function(metaweb, trophic_sensitivity) {
+  motifs <- as.matrix(metaweb) |>
+    # Motif census of metaweb of interest
+    motifcensus::motif_census_triplet() |>
+    
+    # Reduce number of of columns
+    dplyr::select(sum_pos,i,j,k,pos_i,pos_j,pos_k) |> 
+    
+    # Select motifs of interest 
+    # 5:exploitative competition; 12:linear chain; 28:apparent competition; 36:omnivory
+    dplyr::filter(sum_pos %in% c(5, 12, 28, 36)) |>
+    
+    # Give species proper id, motifcensus puts them back to 0
+    dplyr::mutate(i = i + 1, j = j + 1, k = k + 1) |>
+    
+    # Rename columns and pivot wider
+    ## The next steps are all to reposition species in proper order of i,j,k 
+    ## These will then be used to identify all possible pathways of effect
+    dplyr::rename(i_vc = i, j_vc = j, k_vc = k, i_pos = pos_i, j_pos = pos_j, k_pos = pos_k) |>
+    dplyr::mutate(uid = 1:dplyr::n()) |>
+    tidyr::pivot_longer(
+     cols = c("i_vc","j_vc","k_vc","i_pos","j_pos","k_pos"), 
+     names_to = c("sp",".value"), 
+     names_sep = "_"
+    ) |>
+    dplyr::group_by(uid, sum_pos) |>
+    dplyr::arrange(uid,sum_pos,pos) |> # Reposition species in proper order
+    dplyr::ungroup() |>
+    dplyr::mutate(sp = rep(c("i","j","k"), dplyr::n()/3)) |>
+    tidyr::pivot_wider(
+      id_cols = c(uid,sum_pos),
+      names_from = sp, 
+      values_from = c(vc,pos)
+    ) |>
+    dplyr::select(-uid,-pos_i,-pos_j,-pos_k)
+      
+  # Now we can join with trophic sensitivity data
+  ## Start by pivoting sensitivities wider to obtain a single line per pathway of effect
+  sensitivity <- tidyr::pivot_wider(
+    trophic_sensitivity, 
+    id_cols = c("motifID","pathID","pi","pj","pk"),
+    names_from = Species, 
+    values_from = sensitivity_1
+  ) |>
+  dplyr::rename(
+    effect_i = pi, effect_j = pj, effect_k = pk,
+    TS_i = i, TS_j = j, TS_k = k,
+  )
+  
+  ## Join with censusmotif data
+  dat <- dplyr::left_join(
+    motifs, 
+    sensitivity, 
+    by = c("sum_pos" = "motifID"), 
+    relationship = "many-to-many"
+  ) 
            
   # Return 
   dat
@@ -191,52 +204,42 @@ cea_pathways <- function(effect, vc) {
 #' ========================================================================================
 #' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' ----------------------------------------------------------------------------------------
-#' @describeIn ncea pathways of indirect effect and trophic sensitivity
+#' @describeIn ncea assess all triads of interest from metaweb
 #' @export
+# Difference starts here
 ncea_pathways <- function(vc_id, motifs) {
-  # Select triads involving species found in cell j
-  uid <- motifs$i_id %in% vc_id$vc_id & 
-         motifs$j_id %in% vc_id$vc_id & 
-         motifs$k_id %in% vc_id$vc_id
+  uid <- motifs$vc_i %in% vc_id$vc_id & 
+         motifs$vc_j %in% vc_id$vc_id & 
+         motifs$vc_k %in% vc_id$vc_id
   dat <- motifs[uid, ] 
-
+  id_cell <- vc_id$id_cell[1]
+  vc_id <- vc_id[,c("vc_id","effect")]
+  
   if (nrow(dat) > 0) {
-    # Identify pathways of effect
-    dat <- dat |>
-      dplyr::mutate(i_focus = i_id, j_focus = j_id, k_focus = k_id) |>
-      tidyr::pivot_longer(cols = c("i_focus","j_focus","k_focus"), values_to = "focus") |>
-      dplyr::left_join(vc_id, by = c("focus" = "vc_id")) |>
-      dplyr::select(-focus) |>
-      tidyr::pivot_wider(names_from = name, values_from = effect) |>
-      dplyr::mutate(path = 
-       (i_focus + j_focus + k_focus) * 
-       (i_focus*i_num + j_focus*j_num + k_focus*k_num)
+    dat <- dplyr::left_join(dat, vc_id, by = c("vc_i" = "vc_id")) |>
+      dplyr::left_join(vc_id, by = c("vc_j" = "vc_id")) |>
+      dplyr::left_join(vc_id, by = c("vc_k" = "vc_id")) |>
+      dplyr::filter(effect_i == effect.x & effect_j == effect.y & effect_k == effect)
+      
+    tmp <- dat[, c("vc_i","vc_j","vc_k")]
+    sens <- dat[, c("TS_i","TS_j","TS_k")]
+    tmp2 <- tmp[rep(1:nrow(dat), each = 3),] 
+    dat <- data.frame(
+      vc_id = rep(c(t(tmp)), each = 3), 
+      interaction = c(t(tmp2)),
+      Sensitivity = rep(c(t(sens)), each = 3)
+    ) 
+    
+    # Add missing species 
+    uid <- !vc_id$vc_id %in% dat$vc_id
+    if (any(uid)) {
+      add <- data.frame(
+        vc_id = vc_id$vc_id[uid],
+        interaction = vc_id$vc_id[uid],
+        Sensitivity = 1
       )
-    
-    # Extract trophic sensitivity per motif per species
-    # NOTE: Trophic sensitivity values come from Beauchesne et al. 2021 and are available as data in
-    #       the `rcea` package
-    ts <- dat |>
-      dplyr::mutate(i2 = i_id, j2 = j_id, k2 = k_id) |>
-      tidyr::pivot_longer(
-        cols = c("i_id","j_id","k_id","i_num","j_num","k_num"), 
-        names_to = c("pos",".value"), 
-        names_sep = "_"
-      ) |>
-      dplyr::left_join(
-        trophic_sensitivity, 
-        by = c("sum_pos" = "motifID", "num" = "speciesID", "path" = "pathID")
-      ) |>
-      tidyr::pivot_longer(cols = c("i2","j2","k2"), values_to = "interaction")
-    
-    # Join with direct effects table containing list of species 
-    dat <- dplyr::full_join(vc_id, ts, by = c("vc_id" = "id")) |>
-           dplyr::select(vc_id, interaction, Sensitivity)
-    
-    # Modify NAs for the name of the species, and a sensitivity of 1, meaning that species that are not involved in any motif should have a trophic sensitivity = to 1 
-    uid <- is.na(dat$interaction)
-    dat$interaction[uid] <- dat$vc_id[uid]
-    dat$Sensitivity[uid] <- 1    
+      dat <- rbind(dat, add)
+    }
   } else {
     dat <- data.frame(
       vc_id = vc_id$vc_id,
@@ -244,13 +247,12 @@ ncea_pathways <- function(vc_id, motifs) {
       Sensitivity = 1
     )
   }
+  dat$id_cell <- id_cell
   
   # Return
   dat
 }
 
-#' ========================================================================================
-#' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' ----------------------------------------------------------------------------------------
 #' @describeIn ncea apply ncea_pathways to get pathways of indirect effect and trophic sensitivity for all cells
 #' @export
@@ -258,12 +260,7 @@ ncea_pathways_ <- function(direct_pathways, motifs) {
   dat <- dplyr::group_by(direct_pathways, id_cell) |>
          dplyr::group_split() |>
          lapply(function(x) ncea_pathways(x, motifs))
-  for(i in 1:length(dat)) {
-    dat[[i]] <- dplyr::mutate(
-      dat[[i]],
-      id_cell = i
-    ) 
-  }
+  
   dat
 }
 
@@ -293,7 +290,6 @@ ncea_motifs <- function(direct_effect, indirect_pathways) {
   dplyr::mutate(M = sum(direct)) |>
   dplyr::ungroup()  
 }
-
 
 #' ========================================================================================
 #' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -468,3 +464,4 @@ get_cekm_ncea <- function (motif_effects, vc) {
   # Return
   cekm
 }  
+
