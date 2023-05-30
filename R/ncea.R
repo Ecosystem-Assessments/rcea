@@ -117,11 +117,11 @@ triads <- function(metaweb, trophic_sensitivity) {
     motifcensus::motif_census_triplet() |>
     
     # Reduce number of of columns
-    dplyr::select(sum_pos,i,j,k,pos_i,pos_j,pos_k) |> 
+    dplyr::select(psum,i,j,k,pid_i,pid_j,pid_k) |> 
     
     # Select motifs of interest 
     # 5:exploitative competition; 12:linear chain; 28:apparent competition; 36:omnivory
-    dplyr::filter(sum_pos %in% c(5, 12, 28, 36)) |>
+    dplyr::filter(psum %in% c(5, 12, 28, 36)) |>
     
     # Give species proper id, motifcensus puts them back to 0
     dplyr::mutate(i = i + 1, j = j + 1, k = k + 1) |>
@@ -129,19 +129,19 @@ triads <- function(metaweb, trophic_sensitivity) {
     # Rename columns and pivot wider
     ## The next steps are all to reposition species in proper order of i,j,k 
     ## These will then be used to identify all possible pathways of effect
-    dplyr::rename(i_vc = i, j_vc = j, k_vc = k, i_pos = pos_i, j_pos = pos_j, k_pos = pos_k) |>
+    dplyr::rename(i_vc = i, j_vc = j, k_vc = k, i_pos = pid_i, j_pos = pid_j, k_pos = pid_k) |>
     dplyr::mutate(uid = 1:dplyr::n()) |>
     tidyr::pivot_longer(
      cols = c("i_vc","j_vc","k_vc","i_pos","j_pos","k_pos"), 
      names_to = c("sp",".value"), 
      names_sep = "_"
     ) |>
-    dplyr::group_by(uid, sum_pos) |>
-    dplyr::arrange(uid,sum_pos,pos) |> # Reposition species in proper order
+    dplyr::group_by(uid, psum) |>
+    dplyr::arrange(uid,psum,pos) |> # Reposition species in proper order
     dplyr::ungroup() |>
     dplyr::mutate(sp = rep(c("i","j","k"), dplyr::n()/3)) |>
     tidyr::pivot_wider(
-      id_cols = c(uid,sum_pos),
+      id_cols = c(uid,psum),
       names_from = sp, 
       values_from = c(vc,pos)
     ) |>
@@ -164,7 +164,7 @@ triads <- function(metaweb, trophic_sensitivity) {
   dat <- dplyr::left_join(
     motifs, 
     sensitivity, 
-    by = c("sum_pos" = "motifID"), 
+    by = c("psum" = "motifID"), 
     relationship = "many-to-many"
   ) 
            
