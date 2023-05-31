@@ -157,7 +157,7 @@ triads <- function(metaweb, trophic_sensitivity) {
   ) |>
   dplyr::rename(
     effect_i = pi, effect_j = pj, effect_k = pk,
-    TS_i = i, TS_j = j, TS_k = k,
+    TS_i = i, TS_j = j, TS_k = k
   )
   
   ## Join with censusmotif data
