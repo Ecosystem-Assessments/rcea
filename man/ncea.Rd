@@ -13,6 +13,7 @@
 \alias{get_direct_indirect}
 \alias{get_net}
 \alias{get_cekm_ncea}
+\alias{ncea_split}
 \title{Network-scale cumulative effects assessments}
 \usage{
 ncea(
@@ -47,6 +48,19 @@ get_direct_indirect(motif_effects)
 get_net(motif_effects)
 
 get_cekm_ncea(motif_effects, vc)
+
+ncea_split(
+  drivers,
+  vc,
+  sensitivity,
+  metaweb,
+  trophic_sensitivity,
+  w_d = 0.5,
+  w_i = 0.25,
+  output = "output/ncea",
+  niter = NULL,
+  run = NULL
+)
 }
 \arguments{
 \item{drivers}{distribution and intensity of environmental drivers as stars object}
@@ -88,6 +102,8 @@ Assessment of cumulative effects and related metrics using the Beauchesne et al.
 
 \item \code{get_cekm_ncea()}: get effects per km2
 
+\item \code{ncea_split()}: split the assessment in smaller parts for larger analyses that run into memory issues and need to be run in parallel
+
 }}
 \examples{
 # Data
@@ -96,7 +112,6 @@ vc <- rcea:::vc
 sensitivity <- rcea:::sensitivity
 metaweb <- rcea:::metaweb
 trophic_sensitivity <- rcea::trophic_sensitivity
-trophic_sensitivity$Sensitivity <- trophic_sensitivity$Sensitivity2
 
 \dontrun{
 # Network-scale effects 

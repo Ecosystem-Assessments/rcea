@@ -12,7 +12,6 @@
 #' sensitivity <- rcea:::sensitivity
 #' metaweb <- rcea:::metaweb
 #' trophic_sensitivity <- rcea::trophic_sensitivity
-#' trophic_sensitivity$Sensitivity <- trophic_sensitivity$Sensitivity2
 #'
 #' \dontrun{
 #' # Network-scale effects 
@@ -23,9 +22,6 @@
 #' }
 #' @export
 ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0.5, w_i = 0.25, exportAs = "stars") {
-  # NOTE: `motif_summary` Allows a user to directly provide the motif_summary object if it's 
-  #       been run before. This saves computation time if you wish to play around with weights 
-  #       or other method parameters.
   # 3-species motifs for full metaweb
   motifs <- triads(metaweb, trophic_sensitivity)
 
@@ -87,7 +83,6 @@ ncea <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0
   } else {
     NULL
   }
-
 }
 
 
@@ -288,8 +283,9 @@ ncea_motifs <- function(direct_effect, indirect_pathways) {
   dplyr::mutate(direct = vc_id == interaction) |>
   dplyr::group_by(id_cell, vc_id) |>
   dplyr::mutate(M = sum(direct)) |>
-  dplyr::ungroup()  
+  dplyr::ungroup()
 }
+
 
 #' ========================================================================================
 #' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -465,3 +461,148 @@ get_cekm_ncea <- function (motif_effects, vc) {
   cekm
 }  
 
+
+
+
+#' ========================================================================================
+#' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' ----------------------------------------------------------------------------------------
+#' @describeIn ncea split the assessment in smaller parts for larger analyses that run into memory issues and need to be run in parallel
+#' @export
+ncea_split <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0.5, w_i = 0.25, output = "output/ncea", niter = NULL, run = NULL) {
+  # Output folder
+  chk_create(output)
+
+  # 3-species motifs for full metaweb
+  out <- here::here(output, "motifs.csv")
+  if (!file.exists(out)) {
+    motifs <- triads(metaweb, trophic_sensitivity)
+    vroom::vroom_write(motifs, out, delim = ",")
+  } else {
+    motifs <- vroom::vroom(out)
+  }
+
+  # Direct effects, i.e. Halpern approach
+  out <- here::here(output, "direct_effect.RData")
+  if (!file.exists(out)) {
+    direct_effect <- cea(drivers, vc, sensitivity) |>
+                     make_array()
+  } else {
+    load(out)
+  }
+
+  # Pathways of direct effect
+  out <- here::here(output, "direct_pathways.RData")
+  if (!file.exists(out)) {
+    direct_pathways <- cea_pathways(direct_effect, vc)
+    vroom::vroom_write(direct_pathways, out, delim = ",")
+  } else {
+    direct_pathways <- vroom::vroom(out)
+  }
+
+  if (nrow(direct_pathways) > 0) {
+    out <- here::here(output, "motif_summary")
+    chk_create(out)
+
+    # Pathways of indirect effect and effects for motifs in each cell
+    dat <- dplyr::group_by(direct_pathways, id_cell) |>
+           dplyr::group_split() 
+
+    # Iterate over cells 
+    if (is.null(niter)) stop("You must provide the number of iterations into which you wish to split your assessment, i.e. the number of cells per iteration that will be computed.")
+
+    # Iteration data.frame
+    iter <- seq(1, length(dat), length.out = niter+1) |> ceiling()   
+    iter <- data.frame(
+      from = iter[1:(niter)],
+      to = c(iter[2:(niter)]-1,length(dat))
+    )
+    
+    # Iterate and export
+    for(i in run) {
+      # Range 
+      beg <- iter$from[i]
+      end <- iter$to[i]
+      
+      # Pathways of indirect effect
+      indirect_pathways <- lapply(
+        dat[beg:end], 
+        function(x) ncea_pathways(x, motifs)
+      )
+
+      # Effects for motifs in each cell 
+      motif_summary <- ncea_motifs(direct_effect, indirect_pathways)
+      
+      # Export
+      vroom::vroom_write(
+        motif_summary, 
+        sprintf(paste0(out,"/motif_summary.%04d.csv"), i), 
+        delim = ","
+      )
+    }
+    
+    # Combine and continue assessment if all iterations are present 
+    # NOTE: In theory, if parallelized, the last run to complete should complete the assessment
+    files <- dir(out, full.names = TRUE)
+    if (length(files) == niter) {      
+      # Load and append 
+      motif_summary <- purrr::map(files, vroom::vroom) |>
+                       purrr::list_rbind()
+                             
+      # Measure effects on each motif
+      motif_effects <- ncea_effects(motif_summary, w_d, w_i)
+
+      # Species contribution to indirect effects 
+      get_species_contribution(motif_effects) |>
+      dplyr::rename(vc_id = interaction)  |>
+      make_stars(drivers, vc) |>
+      export_stars(output, "species_contribution", length(vc))
+
+      # Direct & indirect effects
+      direct_indirect <- get_direct_indirect(motif_effects)
+      
+      ## Direct effects
+      dplyr::filter(direct_indirect, direct) |>
+      dplyr::select(-direct) |>
+      make_stars(drivers, vc) |>
+      export_stars(output, "direct", length(vc))
+
+      ## Indirect effects
+      dplyr::filter(direct_indirect, !direct) |>
+      dplyr::select(-direct) |>
+      make_stars(drivers, vc) |>
+      export_stars(output, "indirect", length(vc))
+
+      # Net effects
+      get_net(motif_effects) |>
+      make_stars(drivers, vc) |>
+      export_stars(output, "net", length(vc))
+
+      # Effects / km2 
+      out <- paste0(output,"/cekm/")
+      chk_create(out)
+      get_cekm_ncea(motif_effects, vc) |>
+      vroom::vroom_write(paste0(out,"cekm.csv"), delim = ",")
+    } else {
+      NULL
+    }
+  }
+}
+
+# ========================================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ----------------------------------------------------------------------------------------
+export_stars <- function(dat, out, metric, n) {
+  # Create output 
+  out <- paste0(out,"/",metric,"/")
+  chk_create(out)
+  nm <- names(dat)
+  
+  # Export 
+  for(i in 1:n) {
+    stars::write_stars(
+      dat[i], 
+      paste0(out,"/",nm[i],".tif")
+    )
+  }
+}

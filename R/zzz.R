@@ -24,3 +24,12 @@ use_template <- function(template, save_as = stdout(), pkg = "rcea", ...) {
   # NB by default whisker forward the parent envi and I used this
   writeLines(whisker::whisker.render(template, ...), save_as)
 }
+
+#' Check if folder exists and create if not
+#'
+#' @param path path of folder to use as output, create if it does not already exist
+#'
+#' @export
+chk_create <- function(path) {
+  if (!file.exists(path)) dir.create(path, recursive = TRUE)
+}
