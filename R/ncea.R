@@ -487,12 +487,13 @@ ncea_split <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w
   if (!file.exists(out)) {
     direct_effect <- cea(drivers, vc, sensitivity) |>
                      make_array()
+    save(direct_effect, file = out)
   } else {
     load(out)
   }
 
   # Pathways of direct effect
-  out <- here::here(output, "direct_pathways.RData")
+  out <- here::here(output, "direct_pathways.csv")
   if (!file.exists(out)) {
     direct_pathways <- cea_pathways(direct_effect, vc)
     vroom::vroom_write(direct_pathways, out, delim = ",")
