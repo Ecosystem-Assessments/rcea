@@ -502,88 +502,140 @@ ncea_split <- function(drivers, vc, sensitivity, metaweb, trophic_sensitivity, w
   }
 
   if (nrow(direct_pathways) > 0) {
-    out <- here::here(output, "motif_summary")
-    chk_create(out)
+    out <- list()
+    out$motif <- here::here(output, "motif_summary")
+    out$species_contribution <- here::here(output,"partial","species_contribution")
+    out$direct <- here::here(output,"partial","direct")
+    out$indirect <- here::here(output,"partial","indirect")
+    out$net <- here::here(output,"partial","net")
+    lapply(out, chk_create)
 
-    # Pathways of indirect effect and effects for motifs in each cell
-    dat <- dplyr::group_by(direct_pathways, id_cell) |>
-           dplyr::group_split() 
+    # Motif summaries 
+    files <- dir(out$motif, full.names = TRUE)
+    if (length(files) != niter) {      
+      # Pathways of indirect effect and effects for motifs in each cell
+      temp <- dplyr::group_by(direct_pathways, id_cell) |>
+             dplyr::group_split() 
+      rm(direct_pathways) # save memory
 
-    # Iterate over cells 
-    if (is.null(niter)) stop("You must provide the number of iterations into which you wish to split your assessment, i.e. the number of cells per iteration that will be computed.")
+      # Iterate over cells 
+      if (is.null(niter)) stop("You must provide the number of iterations into which you wish to split your assessment, i.e. the number of cells per iteration that will be computed.")
 
-    # Iteration data.frame
-    iter <- seq(1, length(dat), length.out = niter+1) |> ceiling()   
-    iter <- data.frame(
-      from = iter[1:(niter)],
-      to = c(iter[2:(niter)]-1,length(dat))
-    )
-    
-    # Iterate and export
-    for(i in run) {
-      # Range 
-      beg <- iter$from[i]
-      end <- iter$to[i]
-      
-      # Pathways of indirect effect
-      indirect_pathways <- lapply(
-        dat[beg:end], 
-        function(x) ncea_pathways(x, motifs)
-      )
-
-      # Effects for motifs in each cell 
-      motif_summary <- ncea_motifs(direct_effect, indirect_pathways)
-      
-      # Export
-      vroom::vroom_write(
-        motif_summary, 
-        sprintf(paste0(out,"/motif_summary.%04d.csv"), i), 
-        delim = ","
+      # Iteration data.frame
+      iter <- seq(1, length(temp), length.out = niter+1) |> ceiling()   
+      iter <- data.frame(
+        from = iter[1:(niter)],
+        to = c(iter[2:(niter)]-1,length(temp))
       )
     }
-    
-    # Combine and continue assessment if all iterations are present 
-    # NOTE: In theory, if parallelized, the last run to complete should complete the assessment
-    files <- dir(out, full.names = TRUE)
-    if (length(files) == niter) {      
-      # Load and append 
-      motif_summary <- purrr::map(files, vroom::vroom) |>
-                       purrr::list_rbind()
-                             
+      
+    # Iterate and export
+    files <- c(files, "a") # To avoid error in if statement (not pretty, but efficient and it works)
+    for(i in run) {
+      if (!any(stringr::str_detect(files, sprintf("%04d",i)))) {
+        # Range 
+        beg <- iter$from[i]
+        end <- iter$to[i]
+        
+        # Pathways of indirect effect
+        dat <- lapply(
+          temp[beg:end], 
+          function(x) ncea_pathways(x, motifs)
+        )
+
+        # Effects for motifs in each cell 
+        dat <- ncea_motifs(direct_effect, dat)
+        
+        # Export (to test multiple w_d or w_i)
+        vroom::vroom_write(
+          dat, 
+          sprintf(paste0(out$motif,"/motif_summary.%04d.csv"), i), 
+          delim = ","
+        )          
+      }
+    }
+    rm(temp, direct_effect) # save memory  
+      
+    for(i in run) {  
+      # Load motif_summary 
+      dat <- vroom::vroom(sprintf(paste0(out$motif,"/motif_summary.%04d.csv"), i))
+
       # Measure effects on each motif
-      motif_effects <- ncea_effects(motif_summary, w_d, w_i)
+      dat <- ncea_effects(dat, w_d, w_i)
 
       # Species contribution to indirect effects 
-      get_species_contribution(motif_effects) |>
+      get_species_contribution(dat) |>
       dplyr::rename(vc_id = interaction)  |>
-      make_stars(drivers, vc) |>
-      export_stars(output, "species_contribution", length(vc))
+      vroom::vroom_write(
+        sprintf(paste0(out$species_contribution,"/species_contribution.%04d.csv"), i),
+        delim = ","
+      )
 
       # Direct & indirect effects
-      direct_indirect <- get_direct_indirect(motif_effects)
+      direct_indirect <- get_direct_indirect(dat)
       
       ## Direct effects
       dplyr::filter(direct_indirect, direct) |>
       dplyr::select(-direct) |>
-      make_stars(drivers, vc) |>
-      export_stars(output, "direct", length(vc))
+      vroom::vroom_write(
+        sprintf(paste0(out$direct,"/direct.%04d.csv"), i),
+        delim = ","
+      )
 
       ## Indirect effects
       dplyr::filter(direct_indirect, !direct) |>
       dplyr::select(-direct) |>
+      vroom::vroom_write(
+        sprintf(paste0(out$indirect,"/indirect.%04d.csv"), i),
+        delim = ","
+      )
+      rm(direct_indirect) # save memory
+
+      # Net effects
+      get_net(dat) |>
+      vroom::vroom_write(
+        sprintf(paste0(out$net,"/net.%04d.csv"), i),
+        delim = ","
+      )
+    }
+    
+    # Combine and export rasters if all iterations are present 
+    # NOTE: In theory, if parallelized, the last run to complete should complete the assessment
+    files <- dir(out$net, full.names = TRUE)
+    if (length(files) == niter) {   
+      # Species contribution to indirect effects 
+      dir(out$species_contribution, full.names = TRUE) |>
+      purrr::map(vroom::vroom) |>
+      purrr::list_rbind() |>
+      make_stars(drivers, vc) |>
+      export_stars(output, "species_contribution", length(vc))
+
+      ## Direct effects
+      dir(out$direct, full.names = TRUE) |>
+      purrr::map(vroom::vroom) |>
+      purrr::list_rbind() |>
+      make_stars(drivers, vc) |>
+      export_stars(output, "direct", length(vc))
+
+      ## Indirect effects
+      dir(out$indirect, full.names = TRUE) |>
+      purrr::map(vroom::vroom) |>
+      purrr::list_rbind() |>
       make_stars(drivers, vc) |>
       export_stars(output, "indirect", length(vc))
 
       # Net effects
-      get_net(motif_effects) |>
+      dir(out$net, full.names = TRUE) |>
+      purrr::map(vroom::vroom) |>
+      purrr::list_rbind() |>
       make_stars(drivers, vc) |>
       export_stars(output, "net", length(vc))
 
-      # Effects / km2 
-      out <- paste0(output,"/cekm/")
-      chk_create(out)
-      get_cekm_ncea(motif_effects, vc) |>
-      vroom::vroom_write(paste0(out,"cekm.csv"), delim = ",")
+      # # Effects / km2 
+      # out <- paste0(output,"/cekm/")
+      # chk_create(out)
+      # get_cekm_ncea(motif_effects, vc) |>
+      # vroom::vroom_write(paste0(out,"cekm.csv"), delim = ",")
     } else {
       NULL
     }
