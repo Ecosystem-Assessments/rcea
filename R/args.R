@@ -9,6 +9,7 @@ arguments <- function(arg) {
   dat$metaweb <- "@param metaweb matrix of valued component by valued component describing the binary interations structuring the network of valued components"
   dat$trophic_sensitivity <- "@param trophic_sensitivity data.frame of trophic sensitivities, default from Beauchesne. Available as data package with `data(trophic_sensitivity)`"
   dat$w_d <- dat$w_i <- "@param weights weight for the direct (`w_d`) and indirect (`w_i`) modules when calculating network-scale cea scores; w_d + 2*w_i should be equal to 1."
+  dat$output <- "@param relative path to export results of assessment."
   
   dat[names(dat) %in% arg] |>
   unlist()

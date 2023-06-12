@@ -333,7 +333,7 @@ get_species_contribution <- function(motif_effects) {
   notDr <- c("id_cell","vc_id","interaction","Sensitivity","direct","M","weight")
   drNames <- colnames(motif_effects)
   drNames <- drNames[!drNames %in% notDr]
-  dat = dplyr::filter(motif_effects, !direct) |>
+  dplyr::filter(motif_effects, !direct) |>
   dplyr::group_by(id_cell, interaction) |>
   dplyr::summarise(
     dplyr::across(
