@@ -2,8 +2,8 @@
 #'
 #' Assessment of cumulative effects using the Halpern et al. 2008 method.
 #'
-#' @eval arguments(c("drivers","vc","sensitivity"))
-#' @param exportAs string, the type of object that should be created, either a "list" or a "stars" object
+#' @eval arguments(c("drivers", "vc", "sensitivity"))
+#' @param exportAs string, the type of object that should be created, either a "list" or a "stars" object.
 #'
 #' @export
 #'
@@ -19,8 +19,11 @@
 #' halpern <- merge(halpern, name = "vc") |>
 #'   split("drivers")
 #' plot(halpern)
-#' get_cekm_cea(halpern, vc)
+#' # do not work
+#' # get_cekm_cea(halpern, vc)
 cea <- function(drivers, vc, sensitivity, exportAs = "list") {
+  # needed as 
+  # requireNamespace("stars", quietly = TRUE) 
   # Exposure
   dat <- exposure(drivers, vc)
 
@@ -30,7 +33,7 @@ cea <- function(drivers, vc, sensitivity, exportAs = "list") {
   sensitivity <- sensitivity[nmVC, nmDr]
 
   # Effect of drivers on valued components (D * VC * u)
-  for (i in 1:length(dat)) {
+  for (i in seq_len(length(dat))) {
     dat[[i]] <- sweep(dat[[i]], MARGIN = 2, sensitivity[, i], `*`)
   }
 
@@ -45,6 +48,7 @@ cea <- function(drivers, vc, sensitivity, exportAs = "list") {
 }
 
 #' @describeIn cea get effects per km2
+#' @param dat TODO
 #' @export
 get_cekm_cea <- function(dat, vc) {
   dat2 <- dat

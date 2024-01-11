@@ -37,7 +37,7 @@ make_stars <- function(dat, drivers, vc) {
   )
 
   # For data exported as list format (exposure and cea assessments)
-  if ("list" %in% class(dat)) {
+  if (inherits(dat, "list")) {
     for (i in seq_len(length(dat))) {
       dat[[i]] <- cbind(xy, dat[[i]]) |>
         dplyr::mutate(drivers = drNames[i])
@@ -47,7 +47,7 @@ make_stars <- function(dat, drivers, vc) {
   }
 
   # For data exported in long format, from the ncea assessment
-  if ("data.frame" %in% class(dat)) {
+  if (inherits(dat, "data.frame")) {
     # Get coordinates with repeated driver names
     xy$id_cell <- seq_len(nrow(xy))
     xyd <- cbind(
@@ -77,9 +77,9 @@ make_stars <- function(dat, drivers, vc) {
   dat
 }
 
-#' ========================================================================================
-#' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' ----------------------------------------------------------------------------------------
+# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ------------------------------------------------------------------------------
 #' @describeIn helpers create stars object from list of cea matrices or cea array
 #' @export
 make_stars2 <- function(dat, drivers, vc) {

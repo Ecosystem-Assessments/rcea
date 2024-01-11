@@ -73,7 +73,31 @@ ncea_split(
 
 \item{trophic_sensitivity}{data.frame of trophic sensitivities, default from Beauchesne. Available as data package with \code{data(trophic_sensitivity)}}
 
+\item{w_d, w_i}{weight for the direct (\code{w_d}) and indirect (\code{w_i}) modules when calculating network-scale cea scores; w_d + 2*w_i should be equal to 1.}
+
 \item{exportAs}{string, the type of object that should be created, either multiple "data.frame" or "stars" objects}
+
+\item{effect}{TODO}
+
+\item{vc_id}{TODO}
+
+\item{motifs}{TODO}
+
+\item{direct_pathways}{TODO}
+
+\item{direct_effect}{TODO}
+
+\item{indirect_pathways}{TODO}
+
+\item{motif_summary}{TODO}
+
+\item{motif_effects}{TODO}
+
+\item{output}{TODO}
+
+\item{niter}{TODO}
+
+\item{run}{TODO}
 }
 \description{
 Assessment of cumulative effects and related metrics using the Beauchesne et al. 2021 method.
@@ -107,14 +131,14 @@ Assessment of cumulative effects and related metrics using the Beauchesne et al.
 }}
 \examples{
 # Data
-drivers <- rcea:::drivers 
+drivers <- rcea:::drivers
 vc <- rcea:::vc
 sensitivity <- rcea:::sensitivity
 metaweb <- rcea:::metaweb
 trophic_sensitivity <- rcea::trophic_sensitivity
 
 \dontrun{
-# Network-scale effects 
+# Network-scale effects
 beauchesne <- ncea(drivers, vc, sensitivity, metaweb, trophic_sensitivity)
 plot(beauchesne$net)
 plot(beauchesne$direct)

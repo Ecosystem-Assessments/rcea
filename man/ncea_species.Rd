@@ -17,6 +17,8 @@ ncea_species(
 )
 }
 \arguments{
+\item{focus}{TODO}
+
 \item{drivers}{distribution and intensity of environmental drivers as stars object}
 
 \item{vc}{distribution of valued components as stars object}
@@ -27,16 +29,16 @@ ncea_species(
 
 \item{trophic_sensitivity}{data.frame of trophic sensitivities, default from Beauchesne. Available as data package with \code{data(trophic_sensitivity)}}
 
-\item{weights}{weight for the direct (\code{w_d}) and indirect (\code{w_i}) modules when calculating network-scale cea scores; w_d + 2*w_i should be equal to 1.}
+\item{w_d, w_i}{weight for the direct (\code{w_d}) and indirect (\code{w_i}) modules when calculating network-scale cea scores; w_d + 2*w_i should be equal to 1.}
 
-\item{relative}{path to export results of assessment.}
+\item{output}{relative path to export results of assessment.}
 }
 \description{
 Assessment of cumulative effects and related metrics using the Beauchesne et al. 2021 method.
 }
 \examples{
 # Data
-drivers <- rcea:::drivers 
+drivers <- rcea:::drivers
 vc <- rcea:::vc
 sensitivity <- rcea:::sensitivity
 metaweb <- rcea:::metaweb

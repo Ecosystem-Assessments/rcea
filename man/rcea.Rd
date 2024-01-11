@@ -4,3 +4,6 @@
 \name{rcea}
 \alias{rcea}
 \title{rcea: package to perform cumulative effects assessments}
+\description{
+Package to perform cumulative effects assessments.
+}
