@@ -9,33 +9,36 @@
 #'
 #' @examples
 #' # Data
-#' drivers <- rcea:::drivers 
+#' drivers <- rcea:::drivers
 #' vc <- rcea:::vc
 #'
 #' # Exposure
 #' (expo <- exposure(drivers, vc, "stars"))
 #' plot(expo)
 #' expo <- merge(expo, name = "vc") |>
-#'         split("drivers")
+#'   split("drivers")
 #' plot(expo)
-exposure <- function(drivers, vc, exportAs = "list") {
+exposure <- function(drivers, vc, exportAs = c("list", "stars")) {
+
+  #
+  exportAs <- match.arg(exportAs)
   # Drivers
   dr_df <- as.data.frame(drivers) |>
-        dplyr::select(-x,-y)
-  
+    dplyr::select(-x, -y)
+
   # Valued components
   vc_df <- as.data.frame(vc) |>
-        dplyr::select(-x,-y)
-        
+    dplyr::select(-x, -y)
+
   # Exposure of valued components to drivers (Dj * VCi)
   dat <- apply(
     dr_df,
     MARGIN = 2,
     function(x) {
-      sweep(vc_df, MARGIN=1, x, `*`)
+      sweep(vc_df, MARGIN = 1, x, `*`)
     }
-  ) 
-  
+  )
+
   # Return
   if (exportAs == "list") {
     dat

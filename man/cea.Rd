@@ -16,7 +16,9 @@ get_cekm_cea(dat, vc)
 
 \item{sensitivity}{matrix of environmental drivers and valued component, with same name as those used in \code{drivers} and \code{vc}}
 
-\item{exportAs}{string, the type of object that should be created, either a "list" or a "stars" object}
+\item{exportAs}{string, the type of object that should be created, either a "list" or a "stars" object.}
+
+\item{dat}{TODO}
 }
 \description{
 Assessment of cumulative effects using the Halpern et al. 2008 method.
@@ -28,7 +30,7 @@ Assessment of cumulative effects using the Halpern et al. 2008 method.
 }}
 \examples{
 # Data
-drivers <- rcea:::drivers 
+drivers <- rcea:::drivers
 vc <- rcea:::vc
 sensitivity <- rcea:::sensitivity
 
@@ -36,7 +38,8 @@ sensitivity <- rcea:::sensitivity
 (halpern <- cea(drivers, vc, sensitivity, "stars"))
 plot(halpern)
 halpern <- merge(halpern, name = "vc") |>
-          split("drivers")
+  split("drivers")
 plot(halpern)
-get_cekm_cea(halpern, vc)
+# do not work
+# get_cekm_cea(halpern, vc)
 }

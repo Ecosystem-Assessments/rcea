@@ -4,7 +4,7 @@
 \alias{exposure}
 \title{Cumulative exposure assessment}
 \usage{
-exposure(drivers, vc, exportAs = "list")
+exposure(drivers, vc, exportAs = c("list", "stars"))
 }
 \arguments{
 \item{drivers}{distribution and intensity of environmental drivers as stars object}
@@ -18,13 +18,13 @@ Assessment of the exposure (i.e. overlap) between valued components and environm
 }
 \examples{
 # Data
-drivers <- rcea:::drivers 
+drivers <- rcea:::drivers
 vc <- rcea:::vc
 
 # Exposure
 (expo <- exposure(drivers, vc, "stars"))
 plot(expo)
 expo <- merge(expo, name = "vc") |>
-        split("drivers")
+  split("drivers")
 plot(expo)
 }
