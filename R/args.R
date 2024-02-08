@@ -11,8 +11,8 @@ arguments <- function(arg) {
   dat$weights <- "@param w_d,w_i weight for the direct (`w_d`) and indirect (`w_i`) modules when calculating network-scale cea scores; w_d + 2*w_i should be equal to 1."
   dat$output <- "@param output relative path to export results of assessment."
   dat$motif_effects <- "@param motif_effects TODO"
-  dat$output_format <- "@param output format, one of `geotiff` or `COG`."
-  dat$focus <- "@param named argment, string with name of valued component on which to perform the assessment."
+  dat$output_format <- "@param output_format output format, one of `geotiff` or `COG`."
+  dat$focus <- "@param focus named argument, string with name of valued component on which to perform the assessment."
 
   dat[names(dat) %in% arg] |>
     unlist()
