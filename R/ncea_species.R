@@ -2,8 +2,7 @@
 #'
 #' Assessment of cumulative effects and related metrics using the Beauchesne et al. 2021 method.
 #'
-#' @eval arguments(c("drivers", "vc", "sensitivity", "metaweb", "trophic_sensitivity", "weights", "output"))
-#' @param focus TODO
+#' @eval arguments(c("focus","drivers", "vc", "sensitivity", "metaweb", "trophic_sensitivity", "weights", "output", "output_format"))
 #'
 #' @examples
 #' # Data
@@ -16,9 +15,10 @@
 #' \dontrun{
 #' # Network-scale effects for individual species
 #' ncea_species(focus = "vc1", drivers, vc, sensitivity, metaweb, trophic_sensitivity)
+#' ncea_species(focus = "vc1", drivers, vc, sensitivity, metaweb, trophic_sensitivity, output_format = "COG")
 #' }
 #' @export
-ncea_species <- function(focus, drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0.5, w_i = 0.25, output = "output/ncea") {
+ncea_species <- function(focus, drivers, vc, sensitivity, metaweb, trophic_sensitivity, w_d = 0.5, w_i = 0.25, output = "output/ncea", output_format = "geotiff") {
   # ----------------------------------------------------------------------------
   # NOTE: Function to extract results
   ncea_species_res <- function(dat, metric) {
@@ -71,10 +71,21 @@ ncea_species <- function(focus, drivers, vc, sensitivity, metaweb, trophic_sensi
 
       out <- here::here(output, metric)
       chk_create(out)
-      stars::write_stars(
-        dat,
-        dsn = here::here(out, glue::glue("{focus}.tif")),
-      )
+      if (output_format == "geotiff") {
+        stars::write_stars(
+          dat,
+          dsn = here::here(out, glue::glue("{focus}.tif")),
+        )
+      } else if (output_format == "COG") {
+        as(dat, "Raster") |>
+          terra::rast() |>
+          terra::writeRaster(
+            filename = here::here(out, glue::glue("{focus}.cog")),
+            filetype = "COG",
+            gdal = c("COMPRESS=LZW", "TILED=YES", "OVERVIEW_RESAMPLING=AVERAGE"),
+            overwrite = TRUE
+          )
+      }
     }
   }
   # ----------------------------------------------------------------------------------------

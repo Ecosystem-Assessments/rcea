@@ -13,12 +13,11 @@ ncea_species(
   trophic_sensitivity,
   w_d = 0.5,
   w_i = 0.25,
-  output = "output/ncea"
+  output = "output/ncea",
+  output_format = "geotiff"
 )
 }
 \arguments{
-\item{focus}{TODO}
-
 \item{drivers}{distribution and intensity of environmental drivers as stars object}
 
 \item{vc}{distribution of valued components as stars object}
@@ -31,7 +30,9 @@ ncea_species(
 
 \item{w_d, w_i}{weight for the direct (\code{w_d}) and indirect (\code{w_i}) modules when calculating network-scale cea scores; w_d + 2*w_i should be equal to 1.}
 
-\item{output}{relative path to export results of assessment.}
+\item{output}{format, one of \code{geotiff} or \code{COG}.}
+
+\item{named}{argment, string with name of valued component on which to perform the assessment.}
 }
 \description{
 Assessment of cumulative effects and related metrics using the Beauchesne et al. 2021 method.
