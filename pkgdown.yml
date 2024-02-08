@@ -3,7 +3,7 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   rcea: rcea.html
-last_built: 2024-02-08T20:53Z
+last_built: 2024-02-08T20:56Z
 urls:
   reference: https://ecosystem-assessments.github.io/rcea/reference
   article: https://ecosystem-assessments.github.io/rcea/articles
