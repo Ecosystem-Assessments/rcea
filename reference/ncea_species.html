@@ -54,17 +54,14 @@
 <span>  <span class="va">trophic_sensitivity</span>,</span>
 <span>  w_d <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  w_i <span class="op">=</span> <span class="fl">0.25</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"output/ncea"</span></span>
+<span>  output <span class="op">=</span> <span class="st">"output/ncea"</span>,</span>
+<span>  output_format <span class="op">=</span> <span class="st">"geotiff"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>focus</dt>
-<dd><p>TODO</p></dd>
-
-
-<dt>drivers</dt>
+    <dl><dt>drivers</dt>
 <dd><p>distribution and intensity of environmental drivers as stars object</p></dd>
 
 
@@ -89,7 +86,11 @@
 
 
 <dt>output</dt>
-<dd><p>relative path to export results of assessment.</p></dd>
+<dd><p>format, one of <code>geotiff</code> or <code>COG</code>.</p></dd>
+
+
+<dt>named</dt>
+<dd><p>argment, string with name of valued component on which to perform the assessment.</p></dd>
 
 </dl></div>
 
