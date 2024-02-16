@@ -80,7 +80,7 @@ ncea_species <- function(focus, drivers, vc, sensitivity, metaweb, trophic_sensi
         as(dat, "Raster") |>
           terra::rast() |>
           terra::writeRaster(
-            filename = here::here(out, glue::glue("{focus}.cog")),
+            filename = here::here(out, glue::glue("{focus}.tif")),
             filetype = "COG",
             gdal = c("COMPRESS=LZW", "TILED=YES", "OVERVIEW_RESAMPLING=AVERAGE"),
             overwrite = TRUE
